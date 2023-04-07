@@ -1,7 +1,7 @@
 import openai
 
 # Set up OpenAI API key
-api_key = "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"
+api_key = "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"
 openai.api_key = api_key
 
 
