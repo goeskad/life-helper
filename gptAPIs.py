@@ -1,7 +1,7 @@
 import openai
 
 # Set up OpenAI API key
-api_key = "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"
+api_key = "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"
 openai.api_key = api_key
 
 
@@ -13,7 +13,7 @@ def invoke_gpt(message_log):
         messages=message_log,   # The conversation history up to this point, as a list of dictionaries
         max_tokens=500,        # The maximum number of tokens (words or subwords) in the generated response
         stop=None,              # The stopping sequence for the generated response, if any (not used here)
-        temperature=0.7,        # The "creativity" of the generated response (higher temperature = more creative)
+        temperature=0.5,        # The "creativity" of the generated response (higher temperature = more creative)
     )
 
     # Find the first response from the chatbot that has text in it (some responses may not have text)
