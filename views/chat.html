@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Financial Assistant Demo</title>
+    <script type="text/javascript" src="bks.js"></script>
+    <script>
+        async function sendRequest(path, input) {
+            console.log("send request");
+            return fetch(`${path}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({"text": input})
+                }
+            );
+        }
+
+        async function processRequest(response, output) {
+            console.log('get response');
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder('utf-8');
+            output.textContent = "";
+            let content = "";
+            while (true) {
+                const {value, done} = await reader.read();
+                if (value) {
+                    content += decoder.decode(value);
+                    output.textContent = content + '_';
+                }
+                if (done) {
+                    console.log("done");
+                    output.textContent = content;
+                    break;
+                }
+            }
+        }
+        
+        async function handleSubmit(event) {
+            event.preventDefault();
+
+            const input = document.getElementById('message-input').value;
+            const resultDiv = document.getElementById('results');
+            const submitBtn = document.getElementById('submitBtn');
+            
+            // 禁用提交按钮
+            submitBtn.disabled = true;
+            
+            resultDiv.textContent = "正在处理您的请求，请稍后...";
+            
+            const response = await sendRequest("/chat", input);
+            await processRequest(response, resultDiv);
+
+            // 启用提交按钮
+            submitBtn.disabled = false;
+        }
+    </script>
+</head>
+<body>
+<h1>个人理财助理</h1>
+<form onsubmit="handleSubmit(event)">
+    <br>
+    <textarea id="message-input" maxlength="500" cols="60" rows="5" placeholder="请输入您的问题"></textarea>
+    <br><br>
+    <button id="submitBtn" type="submit">提交</button>
+</form>
+<br>
+<div id="resultsDiv">
+    <pre id="results" style="display: inline; max-width: 300px; word-wrap: break-word;"></pre>
+</div>
+</body>
+</html>

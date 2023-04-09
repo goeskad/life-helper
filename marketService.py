@@ -8,7 +8,8 @@ market_host = "http://www.iwencai.com/unifiedwap/unified-wap/v2/result/get-robot
 market_token = "AwrBGiEPWmT3SdbGF0vAp_3TXfup-4pTgHUC-ZRitB3oUqQlfIveZVAPUjZn"
 source_value = "ths_mobile_iwencai"
 version_value = "2.0"
-data_template = f'source={quote(source_value)}&version={quote(version_value)}'
+per_page = 20
+data_template = f'source={quote(source_value)}&version={quote(version_value)}&page=1%perpage={per_page}'
 
 
 def is_number(s):
@@ -49,7 +50,7 @@ def process_columns(data, columns):
         elif isinstance(value, str):
             if is_number(value):
                 allow_column = True
-            elif key == "股票简称" or key == "code":
+            elif "简称" in key or key == "code":
                 allow_column = True
             else:
                 allow_column = False
@@ -96,7 +97,7 @@ def search_market(queries):
         if response.status_code == 200:
             datas = process_response(response.json())
             results = f"{results}\n{question}:\n{json.dumps(datas, ensure_ascii=False, indent=4)}"
-            if len(results) > 1000:
+            if len(results) > 5000:
                 break
         else:
             return f"Error: {response.status_code}"

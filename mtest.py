@@ -1,48 +1,46 @@
+import openai
+import os
+import time
+import inspect
+import gptAPIs
 
-import requests
-import json
+# Replace 'your_api_key_here' with your actual API key
+openai.api_key = os.environ.get("OPENAI_API_KEY")
 
-JSON_AS_ASCII=False
-
-def send_request(url, token, queries):
-    headers = {
-        "Authorization": f"Bearer {token}",
-        "Content-Type": "application/json; charset=utf-8"
-    }
-
-    response = requests.post(url, headers=headers, json=queries)
-
-    if response.status_code == 200:
-        response_data = response.json()
-        new_results = []
-        for result in response_data["results"]:
-            query = result["query"]
-            max_score_result = max(result["results"], key=lambda x: x["score"])
-
-            new_result = {
-                "query": query,
-                "result": max_score_result["text"]
-            }
-            new_results.append(new_result)
-
-        # 将处理后的结果输出为JSON格式
-        output_data = {"results": new_results}
-        output_json = json.dumps(output_data, ensure_ascii=False, indent=4)
-
-        return output_json
-    else:
-        return f"Error: {response.status_code}"
-
-def main():
-    query_url = "https://lobster-app-r4gai.ondigitalocean.app/query"
-    query_token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkxlbyBYIiwiaWF0IjoxNTE2MjM5MDIyfQ.rcrsxozB5v-H7RgsScXOTzG-xgagmeH870_fC2re0iA"
-
-    json_text = "{\"queries\": [{\"query\": \"在软件系统中如何找到供应商名称更改的选项\"}]}"
-    queries = json.loads(json_text)
-    query_response = send_request(query_url, query_token, queries)
-    print(f"Find query response: {query_response}")
+init_message = [{"role": "system", "content": "you are a AI helper"}, {"role": "user", "content": "根据最新的存款利率，我的50万存款应该拿出多少来购买哪些稳健的股票，使我的年收益可以达到5%？"}]
 
 
-# Call the main function if this file is executed directly (not imported as a module)
-if __name__ == "__main__":
-    main()
+def chat_with_gpt_stream(prompt, model="gpt-3.5-turbo", max_tokens=500):
+    print("ready to go:")
+    start_time = time.time()
+    # Create the completion request
+    # response = openai.ChatCompletion.create(
+    #     model=model,
+    #     messages=init_message,
+    #     max_tokens=max_tokens,
+    #     n=1,
+    #     stop=None,
+    #     temperature=0.5,
+    #     stream=True,
+    # )
+
+    response = gptAPIs.invoke_gpt(init_message, use_stream=True)
+
+    chunk_time = time.time() - start_time
+    print(chunk_time)
+    print(inspect.isgenerator(response))
+    # for choice in response.choices:
+    #     if "text" in choice:
+    #         print(choice.text)
+    # for chunk in response:
+    #     delta = chunk['choices'][0]['delta']
+    #     if 'content' in delta:
+    #         print(delta['content'], end='')
+    for chunk in response:
+        if chunk:
+            print(chunk, end='')
+
+
+user_prompt = "请告诉我关于太阳系的一些基本信息。"
+
+chat_with_gpt_stream(user_prompt)

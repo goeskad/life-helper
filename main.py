@@ -1,10 +1,24 @@
-from fastapi import FastAPI, Depends
-from pydantic import BaseModel
+import os
+import time
+from fastapi import FastAPI, status, Header, File, HTTPException, Depends, Body, UploadFile
+from fastapi.responses import StreamingResponse
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi.staticfiles import StaticFiles
+# from starlette.responses import StreamingResponse
+import asyncio
+from typing import Generator, AsyncGenerator, Optional
 
+from pydantic import BaseModel
 import kbsChat
+import financialAssistant
 import marketService
 
 app = FastAPI()
+app.mount("/views", StaticFiles(directory="views"), name="static")
+
+
+init_promote = "你将担任某个软件系统的客服助理。用户会问你一些使用此软件系统时遇到的问题。用户给你的提问中将包含一些关于此系统的知识，你需要根据这些知识来回答用户的提问。"
+system_message = {"role": "system", "content": init_promote}
 
 
 class KBSInput(BaseModel):
@@ -13,8 +27,6 @@ class KBSInput(BaseModel):
 
 class MessageInput(BaseModel):
     text: str
-    kbsQueries: str
-    kbsToken: str
 
 
 @app.post("/getKbsQuestions")
@@ -26,22 +38,75 @@ async def kbs_endpoint(input: KBSInput):
 
 
 @app.post("/chat")
-async def chat_endpoint(input: MessageInput):
+async def chat_endpoint(hexin_v: Optional[str] = Header(None), input: MessageInput=None):
     user_input = input.text
-    kbs_queries = input.kbsQueries
-    kbs_token = input.kbsToken
 
-    init_promote = "你将担任某个软件系统的客服助理。用户会问你一些使用此软件系统时遇到的问题。用户给你的提问中将包含一些关于此系统的知识，你需要根据这些知识来回答用户的提问。"
     message_log = [
-        {"role": "system", "content": init_promote}
+        financialAssistant.system_message
     ]
 
-    if kbs_token is not None:
-        marketService.market_token = kbs_token
+    if hexin_v is not None:
+        marketService.market_token = hexin_v
 
-    response = kbsChat.chat_with_gpt(message_log, user_input, kbs_queries)
-
+    output_queue = asyncio.Queue()
+    asyncio.create_task(kbsChat.chat_with_gpt(message_log, user_input, output_queue))
+    response = StreamingResponse(
+        content=generate_content(output_queue),
+        status_code=status.HTTP_200_OK,
+        media_type="text/html"
+    )
     return response
+
+
+@app.post("/stest")
+async def stream_response(hexin_v: Optional[str] = Header(None), input: MessageInput=None):
+    print('check v' + hexin_v)
+    file_like = get_data_from_file('README.md')
+    output_queue = asyncio.Queue()
+    asyncio.create_task(processor(output_queue))
+    response = StreamingResponse(
+        content=generate_content(output_queue),
+        status_code=status.HTTP_200_OK,
+        media_type="text/html",
+        background=True
+    )
+    return response
+
+
+async def processor(output_queue):
+    for i in range(10):
+        await output_queue.put("output" + str(i) + ". ")
+        await asyncio.sleep(0.1)
+
+    await output_queue.put(ag())
+
+
+def ag():
+    for i in range(10):
+        yield "another" + str(i)
+
+
+async def generate_content(output_queue):
+    while True:
+        content = await output_queue.get()
+        if isinstance(content, str):
+            print(content)
+            yield content
+        else:
+            for data in content:
+                yield data
+            break
+
+
+def get_data_from_file(file_path: str) -> Generator:
+    with open(file=file_path, mode="rb") as file_like:
+        while True:
+            content = file_like.read(50)
+            if len(content) == 0:
+                break
+            else:
+                yield content
+                time.sleep(0.2)
 
 
 def start():
