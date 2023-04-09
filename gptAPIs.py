@@ -48,7 +48,7 @@ def invoke_gpt3(prompt_value):
         prompt=prompt_value,   # The conversation history up to this point, as a list of dictionaries
         max_tokens=200,        # The maximum number of tokens (words or subwords) in the generated response
         stop=None,              # The stopping sequence for the generated response, if any (not used here)
-        temperature=0.1        # The "creativity" of the generated response (higher temperature = more creative)
+        temperature=0.5        # The "creativity" of the generated response (higher temperature = more creative)
     )
 
     # If no response with text is found, return the first response's content (which may be empty)

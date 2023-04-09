@@ -81,7 +81,10 @@ def process_response(response_data):
             if len(columns) == 0:
                 process_columns(data, columns)
             for column in columns:
-                new_data.append(data[column])
+                if column in data:
+                    new_data.append(data[column])
+                else:
+                    new_data.append('unknown')
             new_datas.append(json.dumps(new_data, ensure_ascii=False))
         return {"columns": json.dumps(columns, ensure_ascii=False), "datas": new_datas}
     else:
