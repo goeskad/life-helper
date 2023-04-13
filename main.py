@@ -1,6 +1,6 @@
 import os
 import time
-from fastapi import FastAPI, status, Header, File, HTTPException, Depends, Body, UploadFile
+from fastapi import FastAPI, Request, status, Header, File, HTTPException, Depends, Body, UploadFile
 from fastapi.responses import StreamingResponse
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.staticfiles import StaticFiles
@@ -71,6 +71,17 @@ async def stream_response(hexin_v: Optional[str] = Header(None), input: MessageI
         background=True
     )
     return response
+
+@app.post("/wtest")
+async def wechat(request: Request):
+    # 获取POST请求中的xml数据
+    xml_data = await request.body()
+    # 处理xml数据
+    print("received wechat message")
+    print(xml_data)
+    # 构造回复消息
+    response = "success"
+    return {"message": response}
 
 
 async def processor(output_queue):
