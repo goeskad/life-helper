@@ -89,7 +89,7 @@ async def wechat(request: Request, signature: str, timestamp: str, nonce: str, e
     # 处理xml数据
     print(f"received token verify message {signature}, {timestamp}, {nonce}, {echostr}")
 
-    return echostr
+    return fr"{echostr}"
 
 
 async def processor(output_queue):
