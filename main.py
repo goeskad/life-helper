@@ -84,6 +84,19 @@ async def wechat(request: Request):
     return {"message": response}
 
 
+@app.get("/wtest")
+async def wechat(request: Request):
+    signature = request.get('signature')  # 获取请求信息
+    timestamp = request.get('timestamp')
+    nonce = request.get('nonce')
+    echo_str = request.get('echostr')
+
+    # 处理xml数据
+    print(f"received token verify message {signature}, {timestamp}, {nonce}, {echo_str}")
+
+    return echo_str
+
+
 async def processor(output_queue):
     for i in range(10):
         await output_queue.put("output" + str(i) + ". ")
