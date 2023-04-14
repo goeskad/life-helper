@@ -91,7 +91,7 @@ async def wechat(request: Request):
     print(f"create time {create_time}")
 
     # 构造回复消息
-    output_xml = """
+    output_xml = f"""
 <xml>
   <ToUserName><![CDATA[{to_user_name}]]></ToUserName>
   <FromUserName><![CDATA[{from_user_name}]]></FromUserName>
@@ -101,7 +101,6 @@ async def wechat(request: Request):
 </xml>
 """
 
-    output_xml = output_xml.format(to_user_name, from_user_name, create_time)
     print(f"return message {output_xml}")
     return output_xml
 
