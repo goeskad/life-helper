@@ -13,7 +13,7 @@ import kbsChat
 import financialAssistant
 import marketService
 
-import BeautifulSoup
+from bs4 import BeautifulSoup
 
 app = FastAPI()
 app.mount("/views", StaticFiles(directory="views"), name="static")
