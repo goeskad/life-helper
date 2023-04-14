@@ -13,6 +13,8 @@ import kbsChat
 import financialAssistant
 import marketService
 
+import BeautifulSoup
+
 app = FastAPI()
 app.mount("/views", StaticFiles(directory="views"), name="static")
 
@@ -72,16 +74,34 @@ async def stream_response(hexin_v: Optional[str] = Header(None), input: MessageI
     )
     return response
 
+
 @app.post("/wtest")
 async def wechat(request: Request):
     # 获取POST请求中的xml数据
     xml_data = await request.body()
-    # 处理xml数据
+
     print("received wechat message")
     print(xml_data)
+
+    # 处理xml数据
+    soup = BeautifulSoup(xml_data, 'xml')
+    to_user_name = soup.find("FromUserName").text
+    from_user_name = soup.find("ToUserName").text
+    create_time = str(int(time.time()))
+    print(f"create time {create_time}")
+
     # 构造回复消息
-    response = "success"
-    return {"message": response}
+    output_xml = """
+<xml>
+  <ToUserName><![CDATA[{to_user_name}]]></ToUserName>
+  <FromUserName><![CDATA[{from_user_name}]]></FromUserName>
+  <CreateTime>{create_time}</CreateTime>
+  <MsgType><![CDATA[text]]></MsgType>
+  <Content><![CDATA[你好 大哥]]></Content>
+</xml>
+"""
+
+    return output_xml.format(to_user_name, from_user_name, create_time)
 
 
 @app.get("/wtest")
