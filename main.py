@@ -97,11 +97,13 @@ async def wechat(request: Request):
   <FromUserName><![CDATA[{from_user_name}]]></FromUserName>
   <CreateTime>{create_time}</CreateTime>
   <MsgType><![CDATA[text]]></MsgType>
-  <Content><![CDATA[你好 大哥]]></Content>
+  <Content><![CDATA[你好大哥]]></Content>
 </xml>
 """
 
-    return output_xml.format(to_user_name, from_user_name, create_time)
+    output_xml = output_xml.format(to_user_name, from_user_name, create_time)
+    print(f"return message {output_xml}")
+    return output_xml
 
 
 @app.get("/wtest")
